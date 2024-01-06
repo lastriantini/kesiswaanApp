@@ -35,11 +35,17 @@ class UserController extends Controller
     
     public function dashboard()
     {
+        $rayons = Rayon::where('user_id', Auth::user()->id)->pluck('id');
+        $students = Student::whereIn('rayon_id', $rayons)->pluck('id');
+        $late = Late::whereIn('student_id', $students)
+            ->whereDate('date_time_late', Carbon::today())
+            ->get();
+        $todayLateCount = $late->count();
+        
+        $lates= Student::whereIn('rayon_id', $rayons)->count();
+
         $rayon = Rayon::where('user_id', Auth::user()->id)->pluck('rayon')->first();
         $todayLateCount = Late::whereDate('date_time_late', Carbon::today())->count();
-
-        $rayonIds = Rayon::where('user_id', Auth::user()->id)->pluck('id');
-        $lates = Student::whereIn('rayon_id', $rayonIds)->count();
 
         return view('index', compact('todayLateCount', 'lates', 'rayon'));
     }
